@@ -1,0 +1,21 @@
+## Interface: 80200
+## Title: EasyRecruitingProxy
+## Notes: Easy recruiting proxy
+## SavedVariables: ERPSettings
+## OptionalDeps:
+## Dependencies: LibDBIcon-1.0
+EasyRecruitingProxy.lua
+
+## Configs
+Configs\Constants.lua
+
+## Libs
+Libs\Json\Json.lua
+## Libs\Timer\Timer.lua
+
+## Utils
+Utils\GeneralUtils.lua
+Utils\MessageUtils.lua
+Utils\TableUtils.lua
+
+EasyRecruitingProxy.xml

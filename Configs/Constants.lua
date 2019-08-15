@@ -1,0 +1,1 @@
+EasyRecruitingProxy.Constants.MSG_PREFIX = '__ER__';
