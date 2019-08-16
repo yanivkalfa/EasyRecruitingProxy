@@ -38,18 +38,18 @@ function EasyRecruitingProxy:init()
   if ( not self.initiated ) then
     local easyRecruitingProxyLDB, icon;
     self.Utils.General.hidePrefixedMessages();
-    if LibStub("LibDataBroker-1.1", true) then
+    --if LibStub("LibDataBroker-1.1", true) then
       easyRecruitingProxyLDB = LibStub("LibDataBroker-1.1"):NewDataObject(EasyRecruitingProxy.addonName, {
         type = "data source",
         icon = "Interface\\AddOns\\EasyRecruitingProxy\\Icons\\BattlenetWorking0",
         OnClick = EasyRecruitingProxy.toggleOptions,
       });
-    end
+    --end
 
-    if LibStub("LibDBIcon-1.0", true) then
+    --if LibStub("LibDBIcon-1.0", true) then
       icon = LibStub("LibDBIcon-1.0");
       icon:Register(EasyRecruitingProxy.addonName, easyRecruitingProxyLDB, ERPSettings.minimap);
-    end
+    --end
     EasyRecruitingProxy.initiated = true;
   end
 end
