@@ -4,12 +4,11 @@ EasyRecruitingProxy.Constants = {};
 EasyRecruitingProxy.initiated = nil;
 EasyRecruitingProxy.Utils = {};
 
-
 ERPSettings = ERPSettings or {
-  officers = {
-    "Zeemonk-Silvermoon", 
-    "nefeli-Silvermoon"
+  channelsToSpam = {
+    "Trade - City"
   },
+  officers = {},
   minimap = {
     hide = false,
   },
@@ -24,23 +23,22 @@ function EasyRecruitingProxy:toggleOptions()
 end
 
 function EasyRecruitingProxy:OnEvent(event, ...)
-  local arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10 = ...;
+  local arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12, arg13 = ...;
 
   if ( event == "PLAYER_ENTERING_WORLD") then
     EasyRecruitingProxy:init();
   end
 
   if ( event == "CHAT_MSG_WHISPER") then
-    EasyRecruitingProxy.Utils.Message.routeWshipers(self, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10);
+    EasyRecruitingProxy.Utils.Message.routeWshipers(self, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12, arg13);
   end
 end
 
 function EasyRecruitingProxy:init()
   if ( not self.initiated ) then
-    --self.Utils.General.hidePrefixedmsgs();
+    self.Utils.General.hidePrefixedMessages();
     local easyRecruitingProxyLDB = LibStub("LibDataBroker-1.1"):NewDataObject(EasyRecruitingProxy.addonName, {
       type = "data source",
-      --  type = "button",
       icon = "Interface\\AddOns\\EasyRecruitingProxy\\Icons\\BattlenetWorking0",
       OnClick = EasyRecruitingProxy.toggleOptions,
     });
@@ -60,7 +58,7 @@ function EasyRecruitingProxy:RegisterSlashCommands()
   SLASH_ERP1 = "/ERP";
   SLASH_ERP2 = "/EasyRecruitingProxy";
   SlashCmdList["ERP"] = function(msg)
-    EasyRecruitingProxy.toggleChat();
+    EasyRecruitingProxy:toggleOptions()
   end
 end
 

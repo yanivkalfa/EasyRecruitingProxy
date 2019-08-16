@@ -42,6 +42,21 @@ function EasyRecruitingProxy.Utils.Table.find(tbl, test)
 	return false;
 end
 
+function EasyRecruitingProxy.Utils.Table.map(tbl, map)
+	if(type(tbl) ~= "table") then
+		error("bad argument #1 to 'map' (table expected, got "..type(tbl)..")");
+	end
+	if(type(map) ~= "function") then
+		error("bad argument #2 to 'map' (function expected, got "..type(tbl)..")");
+	end
+	local newTbl = {};
+	for index, value in pairs(tbl) do
+		newTbl[index] = map(index, value);
+	end
+
+	return newTbl;
+end
+
 function EasyRecruitingProxy.Utils.Table.findIndex(tbl, test)
   if(type(tbl) ~= "table") then
 		error("bad argument #1 to 'findIndex' (table expected, got "..type(tbl)..")");

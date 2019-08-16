@@ -1,26 +1,152 @@
 <Ui xmlns="http://www.blizzard.com/wow/ui/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.blizzard.com/wow/ui/
 	..\FrameXML\UI.xsd">
+
   <Frame name="ERPMainFrame" enableMouse="true" movable="true" parent="UIParent" hidden="true">
-    <Size x="400" y="200"/>
+    <Size x="400" y="150"/>
     <Anchors>
       <Anchor point="BOTTOMRIGHT" x="-200" y="150"/>
     </Anchors>
     <Backdrop bgFile="Interface\DialogFrame\UI-DialogBox-Background"
               edgeFile="Interface\DialogFrame\UI-DialogBox-Border" tile="true">
       <BackgroundInsets left="4" right="4" top="4" bottom="4"/>
-      <TileSize val="16" />
+      <TileSize val="16"/>
       <EdgeSize val="16"/>
     </Backdrop>
+    <Layers>
+      <Layer level="OVERLAY">
+        <FontString inherits="GameFontHighlight" text="Options">
+          <Size>
+            <AbsDimension x="200" y="15"/>
+          </Size>
+          <Anchors>
+            <Anchor point="TOP">
+              <Offset>
+                <AbsDimension x="0" y="-10"/>
+              </Offset>
+            </Anchor>
+          </Anchors>
+        </FontString>
+      </Layer>
+    </Layers>
+    <Frames>
+      <Button name="CloseEasyRecruitingProxyOptions" toplevel="true">
+        <Size x="30" y="30"/>
+        <Anchors>
+          <Anchor point="TOPRIGHT" x="-2" y="-2"/>
+        </Anchors>
+        <NormalTexture file="Interface\Buttons\UI-Panel-MinimizeButton-Up.PNG"/>
+        <PushedTexture file="Interface\Buttons\UI-Panel-MinimizeButton-Down.PNG"/>
+        <HighlightTexture file="Interface\Buttons\UI-Panel-MinimizeButton-Highlight.PNG" alphaMode="ADD"/>
+        <Scripts>
+          <OnClick>
+              EasyRecruitingProxy:toggleOptions();
+          </OnClick>
+        </Scripts>
+      </Button>
+      <EditBox name="EasyRecruitingProxyOfficersTextBox" toplevel="true" autoFocus="false">
+        <Size x="310" y="30"/>
+        <Anchors>
+          <Anchor point="TOPRIGHT" x="-15" y="-45"/>
+        </Anchors>
+        <TextInsets left="10" right="10" top="5" bottom="5"/>
+        <Backdrop edgeFile="Interface\DialogFrame\UI-DialogBox-Border" tile="true">
+          <TileSize val="16"/>
+          <EdgeSize val="16"/>
+        </Backdrop>
+        <FontString inherits="ChatFontNormal"/>
+        <Layers>
+          <Layer level="ARTWORK">
+            <FontString name="title" inherits="GameFontNormal" justifyH="LEFT" text="Officers: ">
+              <Anchors>
+                <Anchor point="LEFT" x="-55"/>
+              </Anchors>
+            </FontString>
+          </Layer>
+        </Layers>
+        <Scripts>
+          <OnEscapePressed>
+            self:ClearFocus();
+          </OnEscapePressed>
+        </Scripts>
+      </EditBox>
+      <EditBox name="EasyRecruitingProxySpamChannelsTextBox" toplevel="true" autoFocus="false" letters="200">
+        <Size x="310" y="30"/>
+        <Anchors>
+          <Anchor point="TOPRIGHT" relativeTo="EasyRecruitingProxyOfficersTextBox" y="-35"/>
+        </Anchors>
+        <TextInsets left="10" right="10" top="5" bottom="5"/>
+        <Backdrop edgeFile="Interface\DialogFrame\UI-DialogBox-Border" tile="true">
+          <TileSize val="16"/>
+          <EdgeSize val="16"/>
+        </Backdrop>
+        <FontString inherits="ChatFontNormal"/>
+        <Layers>
+          <Layer level="ARTWORK">
+            <FontString name="title" inherits="GameFontNormal" justifyH="LEFT" text="Channels">
+              <Anchors>
+                <Anchor point="LEFT" x="-55"/>
+              </Anchors>
+            </FontString>
+          </Layer>
+        </Layers>
+        <Scripts>
+          <OnEscapePressed>
+            self:ClearFocus();
+          </OnEscapePressed>
+        </Scripts>
+      </EditBox>
+      <Button name="EasyRecruitingProxyOptionsUpdate" toplevel="true" inherits="UIPanelButtonTemplate" text="Update">
+        <Size x="86" y="30"/>
+        <Anchors>
+          <Anchor point="BOTTOMRIGHT" x="-5" y="5"/>
+        </Anchors>
+        <Scripts>
+          <OnClick>
+              local officersText, channelToSpamText;
+              officersText = EasyRecruitingProxyOfficersTextBox:GetText();
+              if (string.len(officersText) > 0) then
+                local parts = EasyRecruitingProxy.Utils.General.explode(", ", officersText);
+                ERPSettings.officers = EasyRecruitingProxy.Utils.Table.map(parts, function(index, part) return strtrim(part); end);
+              end
+
+              channelToSpamText = EasyRecruitingProxySpamChannelsTextBox:GetText();
+              if (string.len(channelToSpamText) > 0) then
+                local parts = EasyRecruitingProxy.Utils.General.explode(", ", channelToSpamText);
+                ERPSettings.channelsToSpam = EasyRecruitingProxy.Utils.Table.map(parts, function(index, part) return strtrim(part); end);
+              end
+          </OnClick>
+        </Scripts>
+      </Button>
+    </Frames>
     <Scripts>
-      <OnLoad>
-          self:RegisterForDrag("LeftButton", "RightButton");
-      </OnLoad>
-      <OnDragStart>
-          self:StartMoving();
-      </OnDragStart>
-      <OnDragStop>
-          self:StopMovingOrSizing();
-      </OnDragStop>
+      <Scripts>
+        <OnLoad>
+            self:RegisterForDrag("LeftButton", "RightButton");
+        </OnLoad>
+        <OnDragStart>
+            self:StartMoving();
+        </OnDragStart>
+        <OnDragStop>
+            self:StopMovingOrSizing();
+        </OnDragStop>
+      </Scripts>
+      <OnShow>
+          local officersText, channelToSpamText;
+          if (table.getn(ERPSettings.officers) > 0) then
+            officersText = EasyRecruitingProxy.Utils.General.implode(", ", ERPSettings.officers);
+            EasyRecruitingProxyOfficersTextBox:SetText(officersText);
+          end
+
+          if (table.getn(ERPSettings.channelsToSpam) > 0) then
+            channelToSpamText = EasyRecruitingProxy.Utils.General.implode(", ", ERPSettings.channelsToSpam);
+            EasyRecruitingProxySpamChannelsTextBox:SetText(channelToSpamText);
+          end
+      </OnShow>
     </Scripts>
   </Frame>
+
+  <!--
+  strtrim
+
+  -->
 </Ui>

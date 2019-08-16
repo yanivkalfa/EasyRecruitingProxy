@@ -24,7 +24,7 @@ local function hookChatFrame(frame)
 			if ( filterPrefixedMessages(msg) ) then
 				return
 			end
-			original(t, msg, unpack(arg));
+			original(t, msg, ...);
 		end
 	else
 		Utils.log("Tried to hook non-chat frame");

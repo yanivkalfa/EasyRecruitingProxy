@@ -1,2 +1,2 @@
-# LFG
-<b>Easy Recruiting addon</b>
+# ERP
+<b>Easy Recruiting proxy</b>

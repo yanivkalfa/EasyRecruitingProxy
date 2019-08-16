@@ -1,10 +1,5 @@
 EasyRecruitingProxy.Utils.Message = {};
 
-function EasyRecruitingProxy.Utils.Message.createMessage(msg, sender, isRead)
-  isRead = isRead or false;
-  return { msg = msg, sender = sender, isRead = isRead };
-end
-
 function EasyRecruitingProxy.Utils.Message.parseMessage(message)
   local parts = EasyRecruitingProxy.Utils.General.explode(EasyRecruitingProxy.Constants.MSG_PREFIX, message);
   local parsedMessage = {};
@@ -19,56 +14,78 @@ function EasyRecruitingProxy.Utils.Message.parseMessage(message)
   end
 end
 
-function EasyRecruitingProxy.Utils.Message.proxyToUserFromOfficer(parsedMessage)
+function EasyRecruitingProxy.Utils.Message.stringifyMessage(msg)
+  return EasyRecruitingProxy.Constants.MSG_PREFIX..Json.stringify(msg);
+end
+
+function EasyRecruitingProxy.Utils.Message.createSpamAckMessage(num)
+  return { type = "ack", num = num };
+end
+
+function EasyRecruitingProxy.Utils.Message.createMessage(msg, sender, cId)
+  return { msg = msg, sender = sender, cId = cId };
+end
+
+function EasyRecruitingProxy.Utils.Message.toUserFromOfficer(parsedMessage)
   if ( parsedMessage ) then
     SendChatMessage(parsedMessage.msg, "WHISPER", "Common", parsedMessage.to);
   end
 end
 
-function EasyRecruitingProxy.Utils.Message.proxyToOfficerFromUser(message, sender)
-  local jsonMessage, firstMessagePart, nextMessagePart, encodedMessage;
-  firstMessagePart = string.sub(message, 1, 50);
-  nextMessagePart = string.sub(message, 51);
-  jsonMessage = Json.stringify(EasyRecruitingProxy.Utils.Message.createMessage(firstMessagePart, sender));
-  encodedMessage = EasyRecruitingProxy.Constants.MSG_PREFIX..jsonMessage;
+function EasyRecruitingProxy.Utils.Message.toOfficerFromUser(message, sender, GUID)
+  local msg, firstMessagePart, nextMessagePart, stringifiedMessage, guid, cId, className;
+  firstMessagePart = string.sub(message, 1, 150);
+  nextMessagePart = string.sub(message, 151);
+  className = GetPlayerInfoByGUID(GUID);
+  cId = EasyRecruitingProxy.Utils.Table.indexOf(EasyRecruitingProxy.Constants.CLASS_LIST, className);
+  msg = EasyRecruitingProxy.Utils.Message.createMessage(firstMessagePart, sender, cId);
+  stringifiedMessage = EasyRecruitingProxy.Utils.Message.stringifyMessage(msg);
 
-  for index, value in pairs(ERPSettings.officers) do
-    SendChatMessage(encodedMessage, "WHISPER", "Common", value);
-  end;
+  EasyRecruitingProxy.Utils.Message.toOfficerFromProxy(stringifiedMessage);
 
   if (string.len(nextMessagePart) > 0 ) then
-    EasyRecruitingProxy.Utils.Message.proxyToOfficerFromUser(nextMessagePart, sender);
+    EasyRecruitingProxy.Utils.Message.toOfficerFromUser(nextMessagePart, sender, GUID);
   end
 end
 
-function EasyRecruitingProxy.Utils.Message.routeWshipers(self, message, sender, language, channelString, target, flags, arg7, channelNumber, channelName, arg8)
+function EasyRecruitingProxy.Utils.Message.spamAkcToOfficers(num)
+  local msg, stringifiedMessage;
+  msg = EasyRecruitingProxy.Utils.Message.createSpamAckMessage(num);
+  stringifiedMessage = EasyRecruitingProxy.Utils.Message.stringifyMessage(msg);
+  EasyRecruitingProxy.Utils.Message.toOfficerFromProxy(stringifiedMessage);
+end
+
+function EasyRecruitingProxy.Utils.Message.toOfficerFromProxy(message)
+  for index, value in pairs(ERPSettings.officers) do
+    SendChatMessage(message, "WHISPER", "Common", value);
+  end;
+end
+
+function EasyRecruitingProxy.Utils.Message.routeWshipers(self, message, sender, language, channelString, target, flags, arg7, channelNumber, channelName, arg10, arg11, GUID, arg13)
   if( EasyRecruitingProxy.Utils.Table.indexOf(ERPSettings.officers, sender) >= 1) then
-    DEFAULT_CHAT_FRAME:AddMessage("I am proxy message from officers - proxy to user");
+    --DEFAULT_CHAT_FRAME:AddMessage("message from officers - proxy to user");
     local parsedMessage = EasyRecruitingProxy.Utils.Message.parseMessage(message);
 
     if ( parsedMessage ) then
       if ( parsedMessage.type == "action" ) then
         -- do action
-
         return true;
       end
 
-      if ( parsedMessage.type == "note" ) then
-        -- do somethign
+      if ( parsedMessage.type == "spam" ) then
+        for index, value in pairs(ERPSettings.channelsToSpam) do
+          local channelId = GetChannelName(value);
+          SendChatMessage(parsedMessage.msg, "CHANNEL", "Common", channelId);
+        end;
 
+        EasyRecruitingProxy.Utils.Message.spamAkcToOfficers(parsedMessage.num);
         return true;
       end
 
-      EasyRecruitingProxy.Utils.Message.proxyToUserFromOfficer(parsedMessage);
+      EasyRecruitingProxy.Utils.Message.toUserFromOfficer(parsedMessage);
     end
   else
-    EasyRecruitingProxy.Utils.Message.proxyToOfficerFromUser(message, sender);
-    DEFAULT_CHAT_FRAME:AddMessage("I am proxy message from user - proxy to officers");
+    EasyRecruitingProxy.Utils.Message.toOfficerFromUser(message, sender, GUID);
+    --DEFAULT_CHAT_FRAME:AddMessage("message from user - proxy to officers");
   end
 end
-
---__ER__{"msg": "aaaaaaaaaaaaa", "to": "Zeemonk-Silvermoon"}
---__ER__{"msg": "aaaaaaaaaaaaa", "sender": "nefeli-Silvermoon"}
---12345678910111213141516171819202122232425262728293031323334353637383934041424344454647484950515253545556575859606162636465666768697071727374757677787980818283848586878889909192939495969798991001011021031041051061071081091101111121131141151161171181191201211221231241251261271281913013113213313413513613713819140141142143144145146147148149150
-
-
