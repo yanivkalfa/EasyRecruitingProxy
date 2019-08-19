@@ -18,8 +18,12 @@ function EasyRecruitingProxy.Utils.Message.stringifyMessage(msg)
   return EasyRecruitingProxy.Constants.MSG_PREFIX..Json.stringify(msg);
 end
 
+function EasyRecruitingProxy.Utils.Message.createNotifyMessage(event, ...)
+  return { type = "notify", event = event, args = ... };
+end
+
 function EasyRecruitingProxy.Utils.Message.createSpamAckMessage(num)
-  return { type = "ack", num = num };
+  return { type = "ack", num = num, event = "spam" };
 end
 
 function EasyRecruitingProxy.Utils.Message.createMessage(msg, sender, cId)
@@ -48,6 +52,13 @@ function EasyRecruitingProxy.Utils.Message.toOfficerFromUser(message, sender, GU
   end
 end
 
+function EasyRecruitingProxy.Utils.Message.notifyToOfficers(event, ...)
+  local msg, stringifiedMessage;
+  msg = EasyRecruitingProxy.Utils.Message.createNotifyMessage(event, ...);
+  stringifiedMessage = EasyRecruitingProxy.Utils.Message.stringifyMessage(msg);
+  EasyRecruitingProxy.Utils.Message.toOfficerFromProxy(stringifiedMessage);
+end
+
 function EasyRecruitingProxy.Utils.Message.spamAkcToOfficers(num)
   local msg, stringifiedMessage;
   msg = EasyRecruitingProxy.Utils.Message.createSpamAckMessage(num);
@@ -67,6 +78,9 @@ function EasyRecruitingProxy.Utils.Message.routeWshipers(self, message, sender, 
     local parsedMessage = EasyRecruitingProxy.Utils.Message.parseMessage(message);
 
     if ( parsedMessage ) then
+      if (parsedMessage.type == "notify") then
+        return true;
+      end
       if ( parsedMessage.type == "action" ) then
         -- do action
         return true;
